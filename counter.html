@@ -17,8 +17,9 @@
         <div class="card" style="width: 16rem;">
             <div class="card-body">
                 <h5 class="card-title">{{ number }}</h5>
-                <p class="card-text">Press the Blue botton</p>
-                <a href="#" class="btn btn-primary" @click="increment()">Click</a>
+                <p class="card-text">Press the buttons</p>
+                <a href="#" class="btn btn-primary" @click="increment()">Increment</a>
+                <a href="#" class="btn btn-secondary" @click="reset()">Reset</a>
             </div>
         </div>
     </div>  
@@ -32,8 +33,11 @@
             },
 
             methods: {
-            increment() {
-                this.number += 1
+                increment() {
+                    this.number += 1
+                },
+                reset() {
+                    this.number = 0
                 }
             },
         })
