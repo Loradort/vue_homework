@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบฟอร์มลงทะเบียน</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            max-width: 600px;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            background: #fff;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: #ffffff;
+            border-radius: 15px 15px 0 0;
+        }
+        .form-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            border-radius: 10px;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+        .invalid-feedback {
+            font-size: 0.9rem;
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container mt-5 mb-5">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3 class="mb-0">แบบฟอร์มลงทะเบียน</h3>
+            </div>
+            <div class="card-body p-4">
+                <form @submit.prevent="submitForm" novalidate>
+                    <!-- ชื่อ-นามสกุล -->
+                    <div class="mb-3">
+                        <label class="form-label">ชื่อ-นามสกุล <span class="text-danger">*</span></label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            v-model.trim="form.fullName"
+                            :class="{'is-invalid': errors.fullName}"
+                            @input="validateField('fullName')"
+                            required
+                        >
+                        <div class="invalid-feedback">
+                            {{ errors.fullName }}
+                        </div>
+                    </div>
+
+                    <!-- เบอร์โทร -->
+                    <div class="mb-3">
+                        <label class="form-label">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
+                        <input 
+                            type="tel" 
+                            class="form-control" 
+                            v-model.trim="form.phone"
+                            :class="{'is-invalid': errors.phone}"
+                            @input="validatePhone"
+                            maxlength="10"
+                            pattern="[0-9]*"
+                            required
+                        >
+                        <div class="invalid-feedback">
+                            {{ errors.phone }}
+                        </div>
+                        <small class="form-text text-muted">ตัวอย่าง: 0812345678</small>
+                    </div>
+
+                    <!-- รหัสนักศึกษา -->
+                    <div class="mb-3">
+                        <label class="form-label">รหัสนักศึกษา <span class="text-danger">*</span></label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            v-model.trim="form.studentId"
+                            :class="{'is-invalid': errors.studentId}"
+                            @input="validateStudentId"
+                            maxlength="10"
+                            pattern="[0-9]*"
+                            required
+                        >
+                        <div class="invalid-feedback">
+                            {{ errors.studentId }}
+                        </div>
+                    </div>
+
+                    <!-- เลขบัตรประชาชน -->
+                    <div class="mb-3">
+                        <label class="form-label">เลขบัตรประชาชน <span class="text-danger">*</span></label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            v-model.trim="form.idCard"
+                            :class="{'is-invalid': errors.idCard}"
+                            @input="validateIdCard"
+                            maxlength="13"
+                            pattern="[0-9]*"
+                            required
+                        >
+                        <div class="invalid-feedback">
+                            {{ errors.idCard }}
+                        </div>
+                    </div>
+
+                    <!-- อีเมล -->
+                    <div class="mb-3">
+                        <label class="form-label">อีเมล <span class="text-danger">*</span></label>
+                        <input 
+                            type="email" 
+                            class="form-control" 
+                            v-model.trim="form.email"
+                            :class="{'is-invalid': errors.email}"
+                            @input="validateEmail"
+                            required
+                        >
+                        <div class="invalid-feedback">
+                            {{ errors.email }}
+                        </div>
+                    </div>
+
+                    <!-- ที่อยู่ -->
+                    <div class="mb-3">
+                        <label class="form-label">ที่อยู่ <span class="text-danger">*</span></label>
+                        <textarea 
+                            class="form-control" 
+                            v-model.trim="form.address"
+                            :class="{'is-invalid': errors.address}"
+                            @input="validateField('address')"
+                            rows="3"
+                            required
+                        ></textarea>
+                        <div class="invalid-feedback">
+                            {{ errors.address }}
+                        </div>
+                    </div>
+
+                    <!-- ปุ่มส่งฟอร์ม -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">ส่งข้อมูล</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    form: {
+                        fullName: '',
+                        phone: '',
+                        studentId: '',
+                        idCard: '',
+                        email: '',
+                        address: ''
+                    },
+                    errors: {
+                        fullName: '',
+                        phone: '',
+                        studentId: '',
+                        idCard: '',
+                        email: '',
+                        address: ''
+                    }
+                }
+            },
+            methods: {
+                validateField(field) {
+                    if (!this.form[field].trim()) {
+                        this.errors[field] = `กรุณากรอก${this.getFieldLabel(field)}`
+                        return false
+                    }
+                    this.errors[field] = ''
+                    return true
+                },
+
+                validatePhone() {
+                    const phoneNumber = this.form.phone.replace(/[^0-9]/g, '')
+                    this.form.phone = phoneNumber
+
+                    if (!phoneNumber) {
+                        this.errors.phone = 'กรุณากรอกเบอร์โทรศัพท์'
+                        return false
+                    }
+                    if (phoneNumber[0] !== '0') {
+                        this.errors.phone = 'เบอร์โทรศัพท์ต้องขึ้นต้นด้วย 0'
+                        return false
+                    }
+                    if (phoneNumber.length !== 10) {
+                        this.errors.phone = 'เบอร์โทรศัพท์ต้องมี 10 หลัก'
+                        return false
+                    }
+                    this.errors.phone = ''
+                    return true
+                },
+
+                validateStudentId() {
+                    const studentId = this.form.studentId.replace(/[^0-9]/g, '')
+                    this.form.studentId = studentId
+
+                    if (!studentId) {
+                        this.errors.studentId = 'กรุณากรอกรหัสนักศึกษา'
+                        return false
+                    }
+                    if (studentId.length !== 10) {
+                        this.errors.studentId = 'รหัสนักศึกษาต้องมี 10 หลัก'
+                        return false
+                    }
+                    this.errors.studentId = ''
+                    return true
+                },
+
+                validateIdCard() {
+                    const idCard = this.form.idCard.replace(/[^0-9]/g, '')
+                    this.form.idCard = idCard
+
+                    if (!idCard) {
+                        this.errors.idCard = 'กรุณากรอกเลขบัตรประชาชน'
+                        return false
+                    }
+                    if (idCard.length !== 13) {
+                        this.errors.idCard = 'เลขบัตรประชาชนต้องมี 13 หลัก'
+                        return false
+                    }
+                    this.errors.idCard = ''
+                    return true
+                },
+
+                validateEmail() {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                    if (!this.form.email) {
+                        this.errors.email = 'กรุณากรอกอีเมล'
+                        return false
+                    }
+                    if (!emailRegex.test(this.form.email)) {
+                        this.errors.email = 'กรุณากรอกอีเมลให้ถูกต้อง'
+                        return false
+                    }
+                    this.errors.email = ''
+                    return true
+                },
+
+                getFieldLabel(field) {
+                    const labels = {
+                        fullName: 'ชื่อ-นามสกุล',
+                        phone: 'เบอร์โทรศัพท์',
+                        studentId: 'รหัสนักศึกษา',
+                        idCard: 'เลขบัตรประชาชน',
+                        email: 'อีเมล',
+                        address: 'ที่อยู่'
+                    }
+                    return labels[field]
+                },
+
+                validateForm() {
+                    let isValid = true
+                    isValid = this.validateField('fullName') && isValid
+                    isValid = this.validatePhone() && isValid
+                    isValid = this.validateStudentId() && isValid
+                    isValid = this.validateIdCard() && isValid
+                    isValid = this.validateEmail() && isValid
+                    isValid = this.validateField('address') && isValid
+                    return isValid
+                },
+
+                submitForm() {
+                    if (this.validateForm()) {
+                        Swal.fire({
+                            title: 'ลงทะเบียนสำเร็จ!',
+                            text: 'ข้อมูลของคุณถูกบันทึกเรียบร้อยแล้ว',
+                            icon: 'success',
+                            confirmButtonText: 'ตกลง',
+                            confirmButtonColor: '#007bff',
+                        })
+                        this.resetForm()
+                    }
+                },
+
+                resetForm() {
+                    Object.keys(this.form).forEach(key => {
+                        this.form[key] = ''
+                    })
+                    Object.keys(this.errors).forEach(key => {
+                        this.errors[key] = ''
+                    })
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
