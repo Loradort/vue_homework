@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบฟอร์มลงทะเบียน</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        .container {
+            max-width: 1200px;
+        }
+        .card-header {
+            background-color: #007bff;
+            color: white;
+        }
+        .card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .list-group-item {
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container mt-5">
+            <div class="row">
+                <!-- Registration Form -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header text-center">
+                            <h3>แบบฟอร์มลงทะเบียน</h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <form @submit.prevent="validateForm">
+                                <!-- Full Name -->
+                                <div class="mb-3">
+                                    <label for="fullName" class="form-label">ชื่อ-นามสกุล</label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="fullName"
+                                        v-model="form.fullName"
+                                        :class="{ 'is-invalid': errors.fullName }"
+                                    >
+                                    <div class="invalid-feedback">{{ errors.fullName }}</div>
+                                </div>
+
+                                <!-- Phone -->
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">เบอร์โทรศัพท์</label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="phone"
+                                        v-model="form.phone"
+                                        @input="handlePhoneInput"
+                                        :class="{ 'is-invalid': errors.phone }"
+                                    >
+                                    <div class="invalid-feedback">{{ errors.phone }}</div>
+                                </div>
+
+                                <!-- Student ID -->
+                                <div class="mb-3">
+                                    <label for="studentId" class="form-label">รหัสนักศึกษา</label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="studentId"
+                                        :value="form.studentId"
+                                        @input="handleStudentIdInput"
+                                        :class="{ 'is-invalid': errors.studentId }"
+                                        maxlength="10"
+                                    >
+                                    <div class="invalid-feedback">{{ errors.studentId }}</div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100">ลงทะเบียน</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registered Users List -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header text-center">
+                            <h3>รายชื่อผู้ลงทะเบียน</h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <ul class="list-group">
+                                <li v-for="(user, index) in registeredUsers" 
+                                    :key="index" 
+                                    class="list-group-item list-group-item-light">
+                                    {{ user.fullName }}
+                                </li>
+                                <li v-if="registeredUsers.length === 0" class="list-group-item text-center text-muted">
+                                    ยังไม่มีผู้ลงทะเบียน
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue;
+
+        createApp({
+            setup() {
+                const form = ref({
+                    fullName: '',
+                    phone: '',
+                    studentId: ''
+                });
+
+                const errors = ref({});
+                const registeredUsers = ref([]);
+
+                const validateForm = () => {
+                    errors.value = {};
+
+                    if (!form.value.fullName) {
+                        errors.value.fullName = "กรุณากรอกชื่อ-นามสกุล";
+                    }
+
+                    if (!form.value.phone || !/^0\d+$/.test(form.value.phone)) {
+                        errors.value.phone = "กรุณากรอกเบอร์โทรศัพท์ที่ถูกต้อง (เบอร์โทรต้องขึ้นต้นด้วย 0 และเป็นตัวเลขทั้งหมด)";
+                    }
+
+                    if (!form.value.studentId || !/^\d{10}$/.test(form.value.studentId)) {
+                        errors.value.studentId = "กรุณากรอกรหัสนักศึกษา 10 ตัวเลขเท่านั้น";
+                    }
+
+                    if (Object.keys(errors.value).length === 0) {
+                        registeredUsers.value.push({ ...form.value });
+                        form.value.fullName = '';
+                        form.value.phone = '';
+                        form.value.studentId = '';
+                    }
+                };
+
+                const handlePhoneInput = (event) => {
+                    form.value.phone = event.target.value.replace(/\D/g, '').slice(0, 10);
+                };
+
+                const handleStudentIdInput = (event) => {
+                    form.value.studentId = event.target.value.replace(/\D/g, '').slice(0, 10);
+                };
+
+                return {
+                    form,
+                    errors,
+                    registeredUsers,
+                    validateForm,
+                    handlePhoneInput,
+                    handleStudentIdInput
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
